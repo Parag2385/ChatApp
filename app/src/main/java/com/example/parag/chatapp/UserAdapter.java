@@ -17,10 +17,15 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
 
     private ArrayList<Users> userList;
     private Context mContext;
+    private ItemClickListener clickListener;
 
     public UserAdapter(ArrayList<Users> userList, Context mContext) {
         this.userList = userList;
         this.mContext = mContext;
+    }
+
+    public interface ItemClickListener {
+        void mClick(View view, String userId, String userName);
     }
 
     @Override
@@ -33,13 +38,11 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.mUserName.setText(userList.get(position).getUserEmail());
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        holder.mUserName.setText(userList.get(position).getUserName());
+    }
 
-            }
-        });
+    public void setClickListener(ItemClickListener itemClickListener) {
+        this.clickListener = itemClickListener;
     }
 
     @Override
@@ -47,12 +50,20 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
         return userList.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         TextView mUserName;
+
         public ViewHolder(View itemView) {
             super(itemView);
             mUserName = itemView.findViewById(R.id.userName);
+            itemView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View view) {
+            clickListener.mClick(view, userList.get(getAdapterPosition()).getUserId(),
+                    userList.get(getAdapterPosition()).getUserName());
         }
     }
 }

@@ -31,8 +31,6 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -51,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
 
     private String mUsername;
     private String mUserId;
+    private String friendUserID;
     private ArrayList<ChatMessage> friendlyMessages;
     private ArrayList<ChatMessage> selectedItems = new ArrayList<>();
     private boolean multiSelect = false;
@@ -69,11 +68,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mUsername = ANONYMOUS;
-
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         mFirebaseAuth = FirebaseAuth.getInstance();
 
-        mMessageDatabaseReference = mFirebaseDatabase.getReference().child("messages");
+        friendUserID = getIntent().getStringExtra("clickedUserID");
+        setTitle(getIntent().getStringExtra("clickedUsername"));
+        SendBird.setFriendUserID(friendUserID);
+
+        mMessageDatabaseReference = mFirebaseDatabase.getReference().child("message");
         mMessageDatabaseReference.keepSynced(true);
 
         // Initialize references to views
@@ -90,7 +92,6 @@ public class MainActivity extends AppCompatActivity {
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
         mMessageRecyclerView.setLayoutManager(mLayoutManager);
         mMessageRecyclerView.setAdapter(mMessageAdapter);
-
         mMessageRecyclerView.addOnItemTouchListener(new RecyclerItemListener(getApplicationContext(), mMessageRecyclerView,
                 new RecyclerItemListener.RecyclerTouchListener() {
                     @Override
@@ -139,10 +140,9 @@ public class MainActivity extends AppCompatActivity {
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ChatMessage chatMessage = new ChatMessage(mMessageEditText.getText().toString(), mUsername,
-                        null, mUserId, System.currentTimeMillis());
+                ChatMessage chatMessage = new ChatMessage(mUsername, null, mMessageEditText.getText().toString(),
+                        System.currentTimeMillis(), mUserId, friendUserID);
                 mMessageDatabaseReference.push().setValue(chatMessage);
-//                Toast.makeText(getApplicationContext(), "message sent", Toast.LENGTH_SHORT).show();
                 // Clear input box
                 mMessageEditText.setText("");
             }
@@ -155,8 +155,6 @@ public class MainActivity extends AppCompatActivity {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     onSignedInInitialize(user.getDisplayName(), user.getUid());
-                    String userId = user.getUid();
-                    SendBird.setUserId(userId);
                 } else {
                     onSignedOutCleanup();
                     startActivityForResult(
@@ -223,6 +221,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         mFirebaseAuth.addAuthStateListener(mAuthStateListener);
+
+        attachDatabaseReadListener();
     }
 
     @Override
@@ -243,6 +243,7 @@ public class MainActivity extends AppCompatActivity {
                     ChatMessage chatMessage = dataSnapshot.getValue(ChatMessage.class);
                     friendlyMessages.add(chatMessage);
                     mMessageAdapter.notifyItemInserted(friendlyMessages.size() - 1);
+                    mMessageRecyclerView.smoothScrollToPosition(friendlyMessages.size() - 1);
                 }
 
                 @Override

@@ -22,7 +22,7 @@ public class MessageAdapter extends RecyclerView.Adapter {
 
     private ArrayList<ChatMessage> chatList;
     private Context mContext;
-    private ItemClickListener clickListener;
+
 
     public MessageAdapter(ArrayList<ChatMessage> chatList, Context mContext) {
         this.chatList = chatList;
@@ -33,7 +33,7 @@ public class MessageAdapter extends RecyclerView.Adapter {
     public int getItemViewType(int position) {
         ChatMessage chatMessage = chatList.get(position);
 
-        if (chatMessage.getUserId().equals(SendBird.getUserId())) {
+        if (chatMessage.getUserId().equals(SendBird.getCurrnetUserId())) {
             // If the current user is the sender of the message
             Log.d("Adapter", "type message sent");
             return VIEW_TYPE_MESSAGE_SENT;
@@ -80,66 +80,10 @@ public class MessageAdapter extends RecyclerView.Adapter {
         return chatList.size();
     }
 
-
-    public interface ItemClickListener {
-        void onClick(View view, int position, boolean isLongClick);
-    }
-
-
-
-    //
-//    @Override
-//    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-//        View view = LayoutInflater.from(parent.getContext())
-//                .inflate(R.layout.item_message, parent, false);
-//
-//        return new ViewHolder(view);
-//    }
-//
-//    @Override
-//    public void onBindViewHolder(ViewHolder holder, final int position) {
-//        boolean isPhoto = chatList.get(position).getPhotoUrl() != null;
-//
-//        if (isPhoto) {
-//            holder.messageTextView.setVisibility(View.GONE);
-//            holder.photoImageView.setVisibility(View.VISIBLE);
-//            Glide.with(holder.photoImageView.getContext())
-//                    .load(chatList.get(position).getPhotoUrl())
-//                    .into(holder.photoImageView);
-//        } else {
-//            holder.messageTextView.setVisibility(View.VISIBLE);
-//            holder.photoImageView.setVisibility(View.GONE);
-//            holder.messageTextView.setText(chatList.get(position).getText());
-//        }
-//        holder.authorTextView.setText(chatList.get(position).getName());
-//
-//    }
-//
-//    @Override
-//    public int getItemCount() {
-//        return chatList.size();
-//    }
-//
-//    public class ViewHolder extends RecyclerView.ViewHolder {
-//
-//        TextView messageTextView;
-//        TextView authorTextView;
-//        ImageView photoImageView;
-//
-//        public ViewHolder(View itemView) {
-//            super(itemView);
-//            messageTextView = itemView.findViewById(R.id.messageTextView);
-//            authorTextView = itemView.findViewById(R.id.nameTextView);
-//            photoImageView = itemView.findViewById(R.id.photoImageView);
-//        }
-//    }
-//
-
     private class SentMessageHolder extends RecyclerView.ViewHolder {
-//        TextView messageText, timeText;
-
         TextView messageTextView;
         TextView authorTextView;
+        TextView mTimeTextView;
         ImageView photoImageView;
 
         public SentMessageHolder(View itemView) {
@@ -147,20 +91,28 @@ public class MessageAdapter extends RecyclerView.Adapter {
             messageTextView = itemView.findViewById(R.id.messageTextView);
             authorTextView = itemView.findViewById(R.id.nameTextView);
             photoImageView = itemView.findViewById(R.id.photoImageView);
+            mTimeTextView = itemView.findViewById(R.id.timeTextView);
         }
 
         void bind(ChatMessage message) {
-            messageTextView.setText(message.getText());
+            String to = message.getzFriendUserId();
 
-            // Format the stored timestamp into a readable String using method.
-//            timeText.setText(Utils.formatDateTime(message.getTime()));
+            if (to.equals(SendBird.getFriendUserID())) {
+                messageTextView.setText(message.getText());
+                authorTextView.setText("You");
+                // Format the stored timestamp into a readable String using method.
+                mTimeTextView.setText(Utils.formatDateTime(message.getTime()));
+            } else {
+                itemView.setVisibility(View.GONE);
+            }
+
         }
     }
-
 
     private class ReceivedMessageHolder extends RecyclerView.ViewHolder {
         TextView messageTextView;
         TextView authorTextView;
+        TextView mTimeTextView;
         ImageView photoImageView;
 
         ReceivedMessageHolder(View itemView) {
@@ -168,17 +120,20 @@ public class MessageAdapter extends RecyclerView.Adapter {
             messageTextView = itemView.findViewById(R.id.messageTextView);
             authorTextView = itemView.findViewById(R.id.nameTextView);
             photoImageView = itemView.findViewById(R.id.photoImageView);
+            mTimeTextView = itemView.findViewById(R.id.timeTextView);
         }
 
         void bind(ChatMessage message) {
-            messageTextView.setText(message.getText());
-
-            // Format the stored timestamp into a readable String using method.
-//            timeText.setText(Utils.formatDateTime(message.getTime()));
-            authorTextView.setText(message.getName());
-
-            // Insert the profile image from the URL into the ImageView.
-//            Utils.displayRoundImageFromUrl(mContext, message.getSender().getProfileUrl(), profileImage);
+            String friendUserId = message.getzFriendUserId();
+            String sendId = message.getUserId();
+            if (friendUserId.equals(SendBird.getCurrnetUserId()) && SendBird.getFriendUserID().equals(sendId)) {
+                messageTextView.setText(message.getText());
+                authorTextView.setText(message.getName());
+                // Format the stored timestamp into a readable String using method.
+                mTimeTextView.setText(Utils.formatDateTime(message.getTime()));
+            } else {
+                itemView.setVisibility(View.GONE);
+            }
         }
     }
 

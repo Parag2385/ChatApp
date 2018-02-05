@@ -1,16 +1,18 @@
 package com.example.parag.chatapp;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.Button;
+import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -22,13 +24,12 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class UserListActivity extends AppCompatActivity {
+public class UserListActivity extends AppCompatActivity implements UserAdapter.ItemClickListener {
 
     private static final int RC_SIGN_IN = 1;
 
@@ -46,6 +47,10 @@ public class UserListActivity extends AppCompatActivity {
     private FirebaseAuth mFirebaseAuth;
     private FirebaseAuth.AuthStateListener mAuthStateListener;
 
+    static {
+        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,14 +60,19 @@ public class UserListActivity extends AppCompatActivity {
         mFirebaseAuth = FirebaseAuth.getInstance();
 
         mUserDatabaseReference = mFirebaseDatabase.getReference().child("users");
+        mUserDatabaseReference.keepSynced(true);
 
         userList = new ArrayList<>();
         mUserList = findViewById(R.id.recycler_view_user_list);
         mUserList.setHasFixedSize(true);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
         mUserList.setLayoutManager(mLayoutManager);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mUserList.getContext(),
+                DividerItemDecoration.VERTICAL);
+        mUserList.addItemDecoration(dividerItemDecoration);
         userAdapter = new UserAdapter(userList, this);
         mUserList.setAdapter(userAdapter);
+        userAdapter.setClickListener(this);
 
         mAuthStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -72,7 +82,7 @@ public class UserListActivity extends AppCompatActivity {
                 if (user != null) {
                     signedInUser = user.getEmail();
                     String userId = user.getUid();
-                    SendBird.setUserId(userId);
+                    SendBird.setCurrentUserId(userId);
                     onSignedInInitialize(user.getEmail(), user.getDisplayName(), userId);
                 } else {
                     onSignedOutCleanup();
@@ -109,7 +119,7 @@ public class UserListActivity extends AppCompatActivity {
                             return;
                         }
                     }
-                    if (!isPresent){
+                    if (!isPresent) {
                         Users mUser = new Users(userName, userEmail, userId);
                         mUserDatabaseReference.push().setValue(mUser);
                     }
@@ -118,8 +128,6 @@ public class UserListActivity extends AppCompatActivity {
                     mUserDatabaseReference.push().setValue(mUser);
                     Toast.makeText(getApplicationContext(), "First Data", Toast.LENGTH_SHORT).show();
                 }
-
-
             }
 
             @Override
@@ -189,10 +197,10 @@ public class UserListActivity extends AppCompatActivity {
             mChildEventListener = new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                        Users users = dataSnapshot.getValue(Users.class);
-                        if (!TextUtils.equals(users.getUserEmail(), signedInUser)) {
-                            userList.add(users);
-                        }
+                    Users users = dataSnapshot.getValue(Users.class);
+                    if (!TextUtils.equals(users.getUserEmail(), signedInUser)) {
+                        userList.add(users);
+                    }
                     userAdapter.notifyDataSetChanged();
                 }
 
@@ -227,5 +235,14 @@ public class UserListActivity extends AppCompatActivity {
         int size = userList.size();
         userList.clear();
         userAdapter.notifyItemRangeRemoved(0, size);
+    }
+
+    @Override
+    public void mClick(View view, String usrId, String usrName) {
+        Context context = view.getContext();
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.putExtra("clickedUserID", usrId);
+        intent.putExtra("clickedUsername", usrName);
+        startActivity(intent);
     }
 }

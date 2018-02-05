@@ -10,17 +10,19 @@ public class ChatMessage {
     private String name;
     private String photoUrl;
     private String userId;
+    private String zFriendUserId;
     private long time;
 
     public ChatMessage() {
     }
 
-    public ChatMessage(String text, String name, String photoUrl, String userId, long time) {
+    public ChatMessage(String name, String photoUrl, String text, long time, String userId, String friendUserId) {
         this.text = text;
         this.name = name;
         this.photoUrl = photoUrl;
         this.userId = userId;
         this.time = time;
+        this.zFriendUserId = friendUserId;
     }
 
     public String getText() {
@@ -61,5 +63,13 @@ public class ChatMessage {
 
     public void setTime(long time) {
         this.time = time;
+    }
+
+    public String getzFriendUserId() {
+        return zFriendUserId;
+    }
+
+    public void setzFriendUserId(String zFriendUserId) {
+        this.zFriendUserId = zFriendUserId;
     }
 }
