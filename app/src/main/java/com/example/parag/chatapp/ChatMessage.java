@@ -9,14 +9,18 @@ public class ChatMessage {
     private String text;
     private String name;
     private String photoUrl;
+    private String userId;
+    private long time;
 
     public ChatMessage() {
     }
 
-    public ChatMessage(String text, String name, String photoUrl) {
+    public ChatMessage(String text, String name, String photoUrl, String userId, long time) {
         this.text = text;
         this.name = name;
         this.photoUrl = photoUrl;
+        this.userId = userId;
+        this.time = time;
     }
 
     public String getText() {
@@ -41,5 +45,21 @@ public class ChatMessage {
 
     public void setPhotoUrl(String photoUrl) {
         this.photoUrl = photoUrl;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public long getTime() {
+        return time;
+    }
+
+    public void setTime(long time) {
+        this.time = time;
     }
 }

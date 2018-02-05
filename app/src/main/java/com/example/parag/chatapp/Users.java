@@ -7,13 +7,15 @@ package com.example.parag.chatapp;
 public class Users {
     private String userName;
     private String userEmail;
+    private String userId;
 
     public Users() {
     }
 
-    public Users(String userName, String userEmail) {
+    public Users(String userName, String userEmail, String userId) {
         this.userName = userName;
         this.userEmail = userEmail;
+        this.userId = userId;
     }
 
     public String getUserName() {

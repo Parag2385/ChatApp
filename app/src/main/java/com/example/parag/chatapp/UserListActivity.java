@@ -71,7 +71,9 @@ public class UserListActivity extends AppCompatActivity {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     signedInUser = user.getEmail();
-                    onSignedInInitialize(user.getEmail(), user.getDisplayName());
+                    String userId = user.getUid();
+                    SendBird.setUserId(userId);
+                    onSignedInInitialize(user.getEmail(), user.getDisplayName(), userId);
                 } else {
                     onSignedOutCleanup();
                     startActivityForResult(
@@ -90,7 +92,7 @@ public class UserListActivity extends AppCompatActivity {
 
     }
 
-    private void onSignedInInitialize(final String userEmail, final String userName) {
+    private void onSignedInInitialize(final String userEmail, final String userName, final String userId) {
 
         mUserDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -108,11 +110,11 @@ public class UserListActivity extends AppCompatActivity {
                         }
                     }
                     if (!isPresent){
-                        Users mUser = new Users(userName, userEmail);
+                        Users mUser = new Users(userName, userEmail, userId);
                         mUserDatabaseReference.push().setValue(mUser);
                     }
                 } else {
-                    Users mUser = new Users(userName, userEmail);
+                    Users mUser = new Users(userName, userEmail, userId);
                     mUserDatabaseReference.push().setValue(mUser);
                     Toast.makeText(getApplicationContext(), "First Data", Toast.LENGTH_SHORT).show();
                 }
@@ -187,12 +189,10 @@ public class UserListActivity extends AppCompatActivity {
             mChildEventListener = new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-//                    for (DataSnapshot data : dataSnapshot.getChildren()) {
                         Users users = dataSnapshot.getValue(Users.class);
                         if (!TextUtils.equals(users.getUserEmail(), signedInUser)) {
                             userList.add(users);
                         }
-//                    }
                     userAdapter.notifyDataSetChanged();
                 }
 

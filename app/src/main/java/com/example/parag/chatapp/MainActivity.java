@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.ActionMode;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -20,7 +21,6 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
-import com.google.android.gms.auth.api.Auth;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -31,6 +31,8 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -48,7 +50,11 @@ public class MainActivity extends AppCompatActivity {
     private Button mSendButton;
 
     private String mUsername;
+    private String mUserId;
     private ArrayList<ChatMessage> friendlyMessages;
+    private ArrayList<ChatMessage> selectedItems = new ArrayList<>();
+    private boolean multiSelect = false;
+    private int mPosition;
 
     private FirebaseDatabase mFirebaseDatabase;     //Entry Point to the database
     private DatabaseReference mMessageDatabaseReference;   //Reference to the specific part of the database.
@@ -85,6 +91,20 @@ public class MainActivity extends AppCompatActivity {
         mMessageRecyclerView.setLayoutManager(mLayoutManager);
         mMessageRecyclerView.setAdapter(mMessageAdapter);
 
+        mMessageRecyclerView.addOnItemTouchListener(new RecyclerItemListener(getApplicationContext(), mMessageRecyclerView,
+                new RecyclerItemListener.RecyclerTouchListener() {
+                    @Override
+                    public void onClickItem(View view, int position) {
+
+                    }
+
+                    @Override
+                    public void onLongClickItem(View view, int position) {
+                        mPosition = position;
+                        ((AppCompatActivity) view.getContext()).startSupportActionMode(actionModeCallbacks);
+                    }
+                }));
+
         // Initialize progress bar
         mProgressBar.setVisibility(ProgressBar.INVISIBLE);
 
@@ -119,9 +139,10 @@ public class MainActivity extends AppCompatActivity {
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO: Send messages on click
-                ChatMessage chatMessage = new ChatMessage(mMessageEditText.getText().toString(), mUsername, null);
+                ChatMessage chatMessage = new ChatMessage(mMessageEditText.getText().toString(), mUsername,
+                        null, mUserId, System.currentTimeMillis());
                 mMessageDatabaseReference.push().setValue(chatMessage);
+//                Toast.makeText(getApplicationContext(), "message sent", Toast.LENGTH_SHORT).show();
                 // Clear input box
                 mMessageEditText.setText("");
             }
@@ -133,8 +154,9 @@ public class MainActivity extends AppCompatActivity {
 
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
-                    onSignedInInitialize(user.getDisplayName());
-
+                    onSignedInInitialize(user.getDisplayName(), user.getUid());
+                    String userId = user.getUid();
+                    SendBird.setUserId(userId);
                 } else {
                     onSignedOutCleanup();
                     startActivityForResult(
@@ -158,8 +180,9 @@ public class MainActivity extends AppCompatActivity {
         detachDatabaseReadListener();
     }
 
-    private void onSignedInInitialize(String userName) {
+    private void onSignedInInitialize(String userName, String userId) {
         mUsername = userName;
+        mUserId = userId;
         attachDatabaseReadListener();
     }
 
@@ -254,5 +277,33 @@ public class MainActivity extends AppCompatActivity {
         friendlyMessages.clear();
         mMessageAdapter.notifyItemRangeRemoved(0, size);
     }
+
+    private ActionMode.Callback actionModeCallbacks = new ActionMode.Callback() {
+        @Override
+        public boolean onCreateActionMode(ActionMode actionMode, Menu menu) {
+            multiSelect = true;
+            menu.add("Delete");
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode actionMode, Menu menu) {
+            return false;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
+            friendlyMessages.remove(mPosition);
+            actionMode.finish();
+            return true;
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode actionMode) {
+            multiSelect = false;
+            mMessageAdapter.notifyDataSetChanged();
+        }
+    };
+
 }
 
