@@ -16,7 +16,6 @@ import java.util.ArrayList;
  */
 
 public class MessageAdapter extends RecyclerView.Adapter {
-
     private static final int VIEW_TYPE_MESSAGE_SENT = 1;
     private static final int VIEW_TYPE_MESSAGE_RECEIVED = 2;
 
@@ -58,7 +57,7 @@ public class MessageAdapter extends RecyclerView.Adapter {
             return new ReceivedMessageHolder(view);
         }
 
-        return null;
+        return null ;
     }
 
     @Override
@@ -68,7 +67,6 @@ public class MessageAdapter extends RecyclerView.Adapter {
         switch (holder.getItemViewType()) {
             case VIEW_TYPE_MESSAGE_SENT:
                 ((SentMessageHolder) holder).bind(message);
-                Log.d("Adapter", "bind message sent");
                 break;
             case VIEW_TYPE_MESSAGE_RECEIVED:
                 ((ReceivedMessageHolder) holder).bind(message);
@@ -102,7 +100,8 @@ public class MessageAdapter extends RecyclerView.Adapter {
                 authorTextView.setText("You");
                 // Format the stored timestamp into a readable String using method.
                 mTimeTextView.setText(Utils.formatDateTime(message.getTime()));
-            } else {
+            }
+            else {
                 itemView.setVisibility(View.GONE);
             }
 
@@ -131,7 +130,8 @@ public class MessageAdapter extends RecyclerView.Adapter {
                 authorTextView.setText(message.getName());
                 // Format the stored timestamp into a readable String using method.
                 mTimeTextView.setText(Utils.formatDateTime(message.getTime()));
-            } else {
+            }
+            else {
                 itemView.setVisibility(View.GONE);
             }
         }

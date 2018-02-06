@@ -59,7 +59,7 @@ public class UserListActivity extends AppCompatActivity implements UserAdapter.I
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         mFirebaseAuth = FirebaseAuth.getInstance();
 
-        mUserDatabaseReference = mFirebaseDatabase.getReference().child("users");
+        mUserDatabaseReference = mFirebaseDatabase.getReference().child("users1");
         mUserDatabaseReference.keepSynced(true);
 
         userList = new ArrayList<>();

@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
         setTitle(getIntent().getStringExtra("clickedUsername"));
         SendBird.setFriendUserID(friendUserID);
 
-        mMessageDatabaseReference = mFirebaseDatabase.getReference().child("message");
+        mMessageDatabaseReference = mFirebaseDatabase.getReference().child("messages1");
         mMessageDatabaseReference.keepSynced(true);
 
         // Initialize references to views
@@ -92,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
         mMessageRecyclerView.setLayoutManager(mLayoutManager);
         mMessageRecyclerView.setAdapter(mMessageAdapter);
+
         mMessageRecyclerView.addOnItemTouchListener(new RecyclerItemListener(getApplicationContext(), mMessageRecyclerView,
                 new RecyclerItemListener.RecyclerTouchListener() {
                     @Override
@@ -114,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 // TODO: Fire an intent to show an image picker
+                Toast.makeText(getApplicationContext(), "Under Development", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -157,16 +159,6 @@ public class MainActivity extends AppCompatActivity {
                     onSignedInInitialize(user.getDisplayName(), user.getUid());
                 } else {
                     onSignedOutCleanup();
-                    startActivityForResult(
-                            AuthUI.getInstance()
-                                    .createSignInIntentBuilder()
-                                    .setIsSmartLockEnabled(false)
-                                    .setAvailableProviders(Arrays.asList(
-                                            new AuthUI.IdpConfig.EmailBuilder().build(),
-                                            new AuthUI.IdpConfig.PhoneBuilder().build(),
-                                            new AuthUI.IdpConfig.GoogleBuilder().build()))
-                                    .build(),
-                            RC_SIGN_IN);
                 }
             }
         };
@@ -242,7 +234,8 @@ public class MainActivity extends AppCompatActivity {
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                     ChatMessage chatMessage = dataSnapshot.getValue(ChatMessage.class);
                     friendlyMessages.add(chatMessage);
-                    mMessageAdapter.notifyItemInserted(friendlyMessages.size() - 1);
+//                    mMessageAdapter.notifyItemInserted(friendlyMessages.size() - 1);
+                    mMessageAdapter.notifyDataSetChanged();
                     mMessageRecyclerView.smoothScrollToPosition(friendlyMessages.size() - 1);
                 }
 
