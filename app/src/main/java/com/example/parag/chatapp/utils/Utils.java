@@ -1,4 +1,4 @@
-package com.example.parag.chatapp;
+package com.example.parag.chatapp.utils;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -17,8 +17,6 @@ public class Utils {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(timeInMillies);
 
-        String time = dateFormat.format(calendar.getTime());
-
-        return time;
+        return dateFormat.format(calendar.getTime());
     }
 }
